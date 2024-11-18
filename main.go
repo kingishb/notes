@@ -79,7 +79,7 @@ func writeHeader(file string, clear bool) {
 	}
 
 	// if clear is set, add 50 newlines to hide current
-	// buffer, for like, note taking on a video call
+	// buffer when sharing screen
 	n := strings.Repeat("\n", 50)
 	if clear {
 
