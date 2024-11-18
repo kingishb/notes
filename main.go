@@ -15,6 +15,7 @@ func main() {
 	home := os.Getenv("HOME")
 	// notes files
 	notes := fmt.Sprintf("%s/notes.txt", home)
+	// occasional private notes to keep separate
 	notesPersonal := fmt.Sprintf("%s/notes-personal.txt", home)
 
 	// default editor is nvim
@@ -78,18 +79,19 @@ func writeHeader(file string, clear bool) {
 	}
 
 	// if clear is set, add 50 newlines to hide current
-	// notes (maybe on video call?)
+	// buffer, for like, note taking on a video call
 	n := strings.Repeat("\n", 50)
 	if clear {
 
 		// check if today's date is at top of file
-		// if not, prepend it before reading.
+		// if it is, dump 50 newlines after the date header
 		if strings.HasPrefix(string(data), today) {
 			err = os.WriteFile(file,
 				[]byte(fmt.Sprintf("%s\n----------\n%s%s", header, n, string(data[len(header)+12:]))), 0644)
 			if err != nil {
 				log.Fatal(err)
 			}
+		// otherwise just write the header + lots of newlines
 		} else {
 			err = os.WriteFile(file,
 				append([]byte(fmt.Sprintf("%s\n----------\n%s", header, n)),
@@ -98,6 +100,8 @@ func writeHeader(file string, clear bool) {
 				log.Fatal(err)
 			}
 		}
+	// otherwise just write today's date at the top
+	// if it's not there.
 	} else {
 		if !strings.HasPrefix(string(data), today) {
 			err = os.WriteFile(file,
