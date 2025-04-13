@@ -14,7 +14,7 @@ enum Editor {
 }
 
 
-/// Simple program to greet a person
+/// Open ~/notes.txt for today!
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Cli {
