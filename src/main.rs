@@ -1,47 +1,47 @@
+use chrono::prelude::*;
+use clap::{Parser, ValueEnum};
 use std::env;
 use std::fs;
 use std::process::Command;
-use chrono::prelude::*;
-use clap::{Arg, Command as ClapCommand};
+
+
+#[derive(ValueEnum, Debug, PartialEq, Clone)]
+#[clap(rename_all="kebab_case")]
+enum Editor {
+    Vim,
+    Cursor,
+    VSCode
+}
+
+
+/// Simple program to greet a person
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Cli {
+    /// Clear the visual screen by inserting 50 newlines on the newest note.
+    #[arg(short, long)]
+    clear: bool,
+
+    /// Editor to use
+    #[arg(value_enum)]
+    editor: Editor,
+}
 
 fn main() {
+    let cli = Cli::parse();
     let home = env::var("HOME").expect("Failed to get HOME directory");
 
     // notes files
     let notes = format!("{}/notes.txt", home);
-    let notes_personal = format!("{}/notes-personal.txt", home);
 
-    // Parse command line arguments using clap
-    let matches = ClapCommand::new("notes")
-        .arg(Arg::new("private")
-            .short('p')
-            .long("private")
-            .help("Open non-work notes")
-            .action(clap::ArgAction::SetTrue))
-        .arg(Arg::new("clear")
-            .short('c')
-            .long("clear")
-            .help("Insert 50 newlines to not show notes on startup")
-            .action(clap::ArgAction::SetTrue))
-        .arg(Arg::new("vscode")
-            .short('v')
-            .long("vscode")
-            .help("Use VSCode")
-            .action(clap::ArgAction::SetTrue))
-        .get_matches();
-
-    // default editor is nvim
-    let editor = if matches.get_flag("vscode") {
-        "code"
-    } else {
-        "nvim"
+    let editor = match cli.editor {
+        Editor::Vim => "nvim",
+        Editor::Cursor => "cursor",
+        Editor::VSCode => "code"
     };
 
-    let file_path = if matches.get_flag("private") {
-        write_header(&notes_personal, matches.get_flag("clear"));
-        notes_personal
-    } else {
-        write_header(&notes, matches.get_flag("clear"));
+    let file_path = {
+        write_header(&notes, cli.clear);
         notes
     };
 
@@ -56,8 +56,7 @@ fn main() {
 // writeHeader writes the date to the top of the notes file. clear
 // puts a bunch of newlines to not show notes on a video call.
 fn write_header(file: &str, clear: bool) {
-    let data = fs::read_to_string(file)
-        .expect("Failed to read file");
+    let data = fs::read_to_string(file).expect("Failed to read file");
 
     // build header in the Format
     // 01/02/2006
@@ -71,8 +70,7 @@ fn write_header(file: &str, clear: bool) {
         today.clone()
     };
 
-    // if clear is set, add 50 newlines to hide current
-    // buffer when sharing screen
+    // if clear is set, add 50 newlines to hide curren buffer when sharing screen
     let newlines = "\n".repeat(50);
 
     let new_content = if clear {
