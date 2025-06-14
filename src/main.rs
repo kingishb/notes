@@ -4,15 +4,15 @@ use std::env;
 use std::fs;
 use std::process::Command;
 
-
 #[derive(ValueEnum, Debug, PartialEq, Clone)]
-#[clap(rename_all="kebab_case")]
+#[clap(rename_all = "kebab_case")]
 enum Editor {
     Vim,
     Cursor,
-    VSCode
+    VSCode,
+    Zed,
+    Helix,
 }
-
 
 /// Open ~/notes.txt for today!
 #[derive(Parser, Debug)]
@@ -23,7 +23,7 @@ struct Cli {
     clear: bool,
 
     /// Editor to use
-    #[arg(value_enum)]
+    #[arg(value_enum, default_value = "helix")]
     editor: Editor,
 }
 
@@ -35,9 +35,11 @@ fn main() {
     let notes = format!("{}/notes.txt", home);
 
     let editor = match cli.editor {
-        Editor::Vim => "nvim",
+        Editor::Vim => "vim",
         Editor::Cursor => "cursor",
-        Editor::VSCode => "code"
+        Editor::VSCode => "code",
+        Editor::Zed => "zed",
+        Editor::Helix => "hx",
     };
 
     let file_path = {
